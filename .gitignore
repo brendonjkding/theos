@@ -9,3 +9,5 @@ include/*
 lib/*
 templates/*
 !*/.keep
+
+locatesim.mk
