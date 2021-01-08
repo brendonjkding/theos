@@ -8,6 +8,7 @@ toolchain/*
 include/*
 lib/*
 templates/*
+mod/*
 !*/.keep
 
 locatesim.mk
