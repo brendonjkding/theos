@@ -14,12 +14,15 @@ NEUTRAL_ARCH := i386
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_head.mk
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
 
-ifeq ($(WATCHOS_SIMULATOR_ROOT),)
-internal-install::
-	$(ERROR_BEGIN)"$(MAKE) install for the simulator requires that you set WATCHOS_SIMULATOR_ROOT to the root directory of the simulated OS."$(ERROR_END)
-else
+ifdef SIMULATOR
 internal-install:: stage
-	$(ECHO_NOTHING)install.mergeDir "$(THEOS_STAGING_DIR)" "$(WATCHOS_SIMULATOR_ROOT)"$(ECHO_END)
+	$(ECHO_NOTHING)install.exec "cp -r $(THEOS_STAGING_DIR)/ $(SIMULATOR_ROOT)/ "$(ECHO_END)
+
+internal-uninstall::
+	$(ECHO_NOTHING)install.exec "find $(THEOS_STAGING_DIR) | tail -r | sed 's/^$(_THEOS_BACKSLASHED_STAGING_DIR)//' | grep '..*' | sed 's/^/$(BACKSLASHED_SIMULATOR_ROOT)/' | tr '\n' '\0' | xargs -0 rm -df | true > /dev/null "$(ECHO_END)
+
+setup:: internal-install
+remove:: internal-uninstall
 endif
 
 _TARGET_OBJC_ABI_CFLAGS = -fobjc-abi-version=2 -fobjc-legacy-dispatch

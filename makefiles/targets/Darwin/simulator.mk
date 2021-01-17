@@ -10,13 +10,18 @@ _THEOS_TARGET_PLATFORM_IS_SIMULATOR := $(_THEOS_TRUE)
 
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_head.mk
 
-ifeq ($(IPHONE_SIMULATOR_ROOT),)
-internal-install::
-	$(ERROR_BEGIN)"$(MAKE) install for the simulator requires that you set IPHONE_SIMULATOR_ROOT to the root directory of the simulated OS."$(ERROR_END)
-else
+ifdef SIMULATOR
 internal-install:: stage
-	$(ECHO_NOTHING)install.mergeDir "$(THEOS_STAGING_DIR)" "$(IPHONE_SIMULATOR_ROOT)"$(ECHO_END)
+	$(ECHO_NOTHING)install.exec "cp -r $(THEOS_STAGING_DIR)/ $(SIMULATOR_ROOT)/ "$(ECHO_END)
+
+internal-uninstall::
+	$(ECHO_NOTHING)install.exec "find $(THEOS_STAGING_DIR) | tail -r | sed 's/^$(_THEOS_BACKSLASHED_STAGING_DIR)//' | grep '..*' | sed 's/^/$(BACKSLASHED_SIMULATOR_ROOT)/' | tr '\n' '\0' | xargs -0 rm -df | true > /dev/null "$(ECHO_END)
+
+setup:: internal-install
+remove:: internal-uninstall
 endif
+
+
 
 # We have to figure out the target version here, as we need it in the calculation of the deployment version.
 _TARGET_VERSION_GE_3_2 = $(call __simplify,_TARGET_VERSION_GE_3_2,$(shell $(THEOS_BIN_PATH)/vercmp.pl $(_THEOS_TARGET_SDK_VERSION) ge 3.2))
