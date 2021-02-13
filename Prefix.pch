@@ -39,6 +39,6 @@
 
 #if __has_feature(ptrauth_calls) // arm64e
 	#if __clang_major__ >=12 //Xcode 12
-	#error Xcode 12 prohibitted on arm64e
+		#pragma message ( "building arm64e with Xcode 12" ) 
 	#endif
 #endif
