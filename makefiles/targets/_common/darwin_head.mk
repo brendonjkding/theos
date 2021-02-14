@@ -65,6 +65,7 @@ TARGET_CXX ?= $(call __invocation,$(_THEOS_TARGET_CXX))
 TARGET_LD ?= $(call __invocation,$(_THEOS_TARGET_CXX))
 TARGET_SWIFT ?= $(call __invocation,$(_THEOS_TARGET_SWIFT))
 TARGET_LIPO ?= $(call __invocation,lipo)
+TARGET_PLIPO ?= plipo
 TARGET_STRIP ?= $(call __invocation,strip)
 TARGET_CODESIGN_ALLOCATE ?= $(call __invocation,codesign_allocate)
 TARGET_LIBTOOL ?= $(call __invocation,libtool)
