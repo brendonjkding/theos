@@ -21,7 +21,7 @@ internal-install:: stage
 internal-uninstall::
 	$(ECHO_NOTHING)install.exec "find $(THEOS_STAGING_DIR) | tail -r | sed 's/^$(_THEOS_BACKSLASHED_STAGING_DIR)//' | grep '..*' | sed 's/^/$(BACKSLASHED_SIMULATOR_ROOT)/' | tr '\n' '\0' | xargs -0 rm -df | true > /dev/null "$(ECHO_END)
 
-setup:: internal-install
+setup:: stage internal-uninstall internal-install
 remove:: internal-uninstall
 endif
 

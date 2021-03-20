@@ -17,11 +17,9 @@ internal-install:: stage
 internal-uninstall::
 	$(ECHO_NOTHING)install.exec "find $(THEOS_STAGING_DIR) | tail -r | sed 's/^$(_THEOS_BACKSLASHED_STAGING_DIR)//' | grep '..*' | sed 's/^/$(BACKSLASHED_SIMULATOR_ROOT)/' | tr '\n' '\0' | xargs -0 rm -df | true > /dev/null "$(ECHO_END)
 
-setup:: internal-install
+setup:: stage internal-uninstall internal-install
 remove:: internal-uninstall
 endif
-
-
 
 # We have to figure out the target version here, as we need it in the calculation of the deployment version.
 _TARGET_VERSION_GE_3_2 = $(call __simplify,_TARGET_VERSION_GE_3_2,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,3.2))
