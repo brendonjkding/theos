@@ -16,7 +16,7 @@ include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
 
 ifdef SIMULATOR
 internal-install:: stage
-	$(ECHO_NOTHING)install.exec "cp -r $(THEOS_STAGING_DIR)/ $(SIMULATOR_ROOT)/ "$(ECHO_END)
+	$(ECHO_NOTHING)install.exec "cp -a $(THEOS_STAGING_DIR)/ $(SIMULATOR_ROOT)/ "$(ECHO_END)
 
 internal-uninstall::
 	$(ECHO_NOTHING)install.exec "find $(THEOS_STAGING_DIR) | tail -r | sed 's/^$(_THEOS_BACKSLASHED_STAGING_DIR)//' | grep '..*' | sed 's/^/$(BACKSLASHED_SIMULATOR_ROOT)/' | tr '\n' '\0' | xargs -0 rm -df | true > /dev/null "$(ECHO_END)
