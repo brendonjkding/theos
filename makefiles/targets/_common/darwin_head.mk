@@ -54,7 +54,7 @@ ifneq ($(PREFIX),)
 	__invocation = $(PREFIX)$(1)
 else ifeq ($(_THEOS_PLATFORM_HAS_XCODE),$(_THEOS_TRUE))
 	# macOS
-	__invocation = $(shell xcrun -sdk $(_THEOS_TARGET_PLATFORM_NAME) -f $(1) 2>/dev/null)
+	__invocation = $(shell $(_THEOS_APPLE_SILICON_COMPATIBLE_PREFIX) xcrun -sdk $(_THEOS_TARGET_PLATFORM_NAME) -f $(1) 2>/dev/null)
 else
 	# iOS
 	__invocation = $(1)

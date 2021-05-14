@@ -16,6 +16,14 @@ ifeq ($(_THEOS_PLATFORM_HAS_XCODE),$(_THEOS_TRUE))
 ifeq ($(THEOS_PLATFORM_SDK_ROOT),)
 	THEOS_PLATFORM_SDK_ROOT := $(shell xcode-select -print-path)
 endif
+
+ifneq ($(findstring arm64,$(shell uname -a)),)
+	ifeq ($(shell xcrun 2>/dev/null; echo $$?),1)
+		# Apple silicon with x64 toolchain
+		_THEOS_APPLE_SILICON_COMPATIBLE_PREFIX := arch -x86_64
+	endif
+endif
+
 	# To have xcrun use our customized THEOS_PLATFORM_SDK_ROOT
 	export DEVELOPER_DIR = $(THEOS_PLATFORM_SDK_ROOT)
 endif
