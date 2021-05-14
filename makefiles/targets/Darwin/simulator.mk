@@ -10,7 +10,6 @@ _THEOS_TARGET_PLATFORM_IS_SIMULATOR := $(_THEOS_TRUE)
 
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_head.mk
 
-ifdef SIMULATOR
 internal-install:: stage
 	$(ECHO_NOTHING)install.exec "cp -a $(THEOS_STAGING_DIR)/ $(SIMJECT_ROOT)/ "$(ECHO_END)
 
@@ -19,7 +18,6 @@ internal-uninstall::
 
 setup:: stage internal-uninstall internal-install
 remove:: internal-uninstall
-endif
 
 # We have to figure out the target version here, as we need it in the calculation of the deployment version.
 _TARGET_VERSION_GE_3_2 = $(call __simplify,_TARGET_VERSION_GE_3_2,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,3.2))

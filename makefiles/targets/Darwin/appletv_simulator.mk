@@ -16,7 +16,6 @@ _THEOS_TARGET_DEFAULT_OS_DEPLOYMENT_VERSION := 9.0
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_head.mk
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
 
-ifdef SIMULATOR
 internal-install:: stage
 	$(ECHO_NOTHING)install.exec "cp -a $(THEOS_STAGING_DIR)/ $(SIMJECT_ROOT)/ "$(ECHO_END)
 
@@ -25,7 +24,6 @@ internal-uninstall::
 
 setup:: stage internal-uninstall internal-install
 remove:: internal-uninstall
-endif
 
 _TARGET_OBJC_ABI_CFLAGS = -fobjc-abi-version=2 -fobjc-legacy-dispatch
 _TARGET_OBJC_ABI_LDFLAGS = -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -allow_simulator_linking_to_macosx_dylibs
