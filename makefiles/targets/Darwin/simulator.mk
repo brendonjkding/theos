@@ -28,8 +28,9 @@ _TARGET_VERSION_GE_7_0 = $(call __simplify,_TARGET_VERSION_GE_7_0,$(call __vercm
 _TARGET_VERSION_GE_8_0 = $(call __simplify,_TARGET_VERSION_GE_8_0,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,8.0))
 _TARGET_VERSION_GE_8_4 = $(call __simplify,_TARGET_VERSION_GE_8_4,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,8.4))
 _TARGET_VERSION_GE_11_0 = $(call __simplify,_TARGET_VERSION_GE_11_0,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,11.0))
+_TARGET_VERSION_GE_14_0 = $(call __simplify,_TARGET_VERSION_GE_14_0,$(call __vercmp,$(_THEOS_TARGET_SDK_VERSION),ge,14.0))
 
-ARCHS ?= $(if $(_TARGET_VERSION_GE_8_0),,i386) $(if $(_TARGET_VERSION_GE_7_0),x86_64)
+ARCHS ?= $(if $(_TARGET_VERSION_GE_8_0),,i386) $(if $(_TARGET_VERSION_GE_7_0),x86_64) $(if $(_TARGET_VERSION_GE_14_0),arm64)
 NEUTRAL_ARCH = $(if $(_TARGET_VERSION_GE_8_0),x86_64,i386)
 
 _TARGET_VERSION_FLAG = $(if $(_TARGET_VERSION_GE_7_0),-mios-simulator-version-min=$(_THEOS_TARGET_IPHONEOS_DEPLOYMENT_VERSION),-mmacosx-version-min=$(if $(_TARGET_VERSION_GE_4_0),10.6,10.5))
