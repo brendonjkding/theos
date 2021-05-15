@@ -9,6 +9,19 @@
 <a href="https://iphonedevwiki.net/index.php/How_to_use_IRC">IRC</a>
 </p>
 
+## This Fork
+* Add ability to directly install Tweak to Simulator
+* Add x86_64 to tbds so we can link Simulator Tweaks to applist, cephei, etc
+* Automatically add arm64 arch when targeting Simulator with sdk >= 14.0
+* Automatically add `arch -x86_64` before `xcrun` if `xcode-select` to x64-only toolchain on Apple silicon
+* Add ability to throw a warning if building arm64e with Xcode 12
+* Correctly select latest sdk when we need to link private frameworks
+* Fix logos double ",..." issue
+* Fix .xmi not treated as objc++ issue
+* Revert Prefix.pch so some old projects won't break 
+* Merge Various SIMBLtweak fixes
+
+
 ## Contributors
 <table>
 <tr>
