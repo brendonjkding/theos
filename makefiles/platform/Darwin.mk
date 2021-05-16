@@ -18,6 +18,7 @@ ifeq ($(THEOS_PLATFORM_SDK_ROOT),)
 endif
 
 ifneq ($(findstring arm64,$(shell uname -a)),)
+	THEOS_IS_APPLE_SILICON = $(_THEOS_TRUE)
 	ifeq ($(shell xcrun 2>/dev/null; echo $$?),1)
 		# Apple silicon with x64 toolchain
 		_THEOS_APPLE_SILICON_COMPATIBLE_PREFIX := arch -x86_64
