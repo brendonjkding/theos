@@ -40,7 +40,9 @@
 #if __has_feature(ptrauth_calls) // arm64e
 	#if __clang_major__ >=12 //Xcode 12
 		#ifndef NO_XCODE_12_WARNING
-			#pragma message ( "building arm64e with Xcode 12" )
+			#if !DEBUG
+				#pragma message ( "About to release arm64e slice made by Xcode 12+" )
+			#endif
 		#endif
 	#endif
 #endif
