@@ -110,10 +110,6 @@ else
 TARGET_ARCHS = $(ARCHS)
 endif
 
-ifneq ($(SECOND_PREFIX),)
-SECOND_TARGET_ARCHS ?= arm64e
-endif
-
 ifeq ($(TARGET_LIPO),)
 ALL_ARCHFLAGS = $(foreach ARCH,$(TARGET_ARCHS),-arch $(ARCH))
 PREPROCESS_ARCH_FLAGS = $(foreach ARCH,$(NEUTRAL_ARCH),-arch $(ARCH))
@@ -330,25 +326,11 @@ $$(THEOS_OBJ_DIR)/%/$(1): $(__ALL_FILES)
 		THEOS_BUILD_DIR="$(THEOS_BUILD_DIR)" \
 		THEOS_CURRENT_ARCH="$$*"
 
-unexport TARGET_CC TARGET_CXX TARGET_LD
-SECOND_ARCH_FILES_TO_LINK := $(addsuffix /$(1).second,$(addprefix $(THEOS_OBJ_DIR)/,$(SECOND_TARGET_ARCHS)))
-$$(THEOS_OBJ_DIR)/%/$(1).second: $(__ALL_FILES)
-	@mkdir -p $(THEOS_OBJ_DIR)/$$*.second
-	$(ECHO_MAKE)$(MAKE) -f $(_THEOS_PROJECT_MAKEFILE_NAME) --no-print-directory --no-keep-going \
-		internal-$(_THEOS_CURRENT_TYPE)-$(_THEOS_CURRENT_OPERATION) \
-		_THEOS_CURRENT_TYPE="$(_THEOS_CURRENT_TYPE)" \
-		THEOS_CURRENT_INSTANCE="$(THEOS_CURRENT_INSTANCE)" \
-		_THEOS_CURRENT_OPERATION="$(_THEOS_CURRENT_OPERATION)" \
-		THEOS_BUILD_DIR="$(THEOS_BUILD_DIR)" \
-		THEOS_CURRENT_ARCH="$$*" \
-		_THEOS_CURRENT_TOOLCHAIN=".second" \
-		PREFIX="$(SECOND_PREFIX)"
-
 ifneq ($$(_THEOS_CODESIGN_COMMANDLINE),)
 .INTERMEDIATE: $$(THEOS_OBJ_DIR)/$(1).$(_THEOS_OUT_FILE_TAG).unsigned
 $(THEOS_OBJ_DIR)/$(1): $$(THEOS_OBJ_DIR)/$(1).$(_THEOS_OUT_FILE_TAG).unsigned
 	$$(ECHO_SIGNING)$$(_THEOS_CODESIGN_COMMANDLINE) "$$<" && mv "$$<" "$$@"$$(ECHO_END)
-$(THEOS_OBJ_DIR)/$(1).$(_THEOS_OUT_FILE_TAG).unsigned: $$(ARCH_FILES_TO_LINK) $$(SECOND_ARCH_FILES_TO_LINK)
+$(THEOS_OBJ_DIR)/$(1).$(_THEOS_OUT_FILE_TAG).unsigned: $$(ARCH_FILES_TO_LINK)
 else
 $(THEOS_OBJ_DIR)/$(1): $$(ARCH_FILES_TO_LINK)
 endif
@@ -356,10 +338,6 @@ ifeq ($$(_THEOS_CURRENT_TYPE),subproject)
 	@echo "$$(_THEOS_INTERNAL_LDFLAGS)" > $$(THEOS_OBJ_DIR)/$$(THEOS_CURRENT_INSTANCE).ldflags
 endif
 	$(ECHO_MERGING)$(ECHO_UNBUFFERED)$(TARGET_LIPO) $(foreach ARCH,$(TARGET_ARCHS),-arch $(ARCH) $(THEOS_OBJ_DIR)/$(ARCH)/$(1)) -create -output "$$@"$(ECHO_END)
-ifneq ($(SECOND_PREFIX),)
-	$(ECHO_NOTHING)mv "$$@" "$$@"".tmp"$(ECHO_END)
-	$(ECHO_NOTHING)$(TARGET_PLIPO) $(foreach ARCH,$(SECOND_TARGET_ARCHS),-arch $(ARCH) $(THEOS_OBJ_DIR)/$(ARCH).second/$(1)) "$$@"".tmp" -create -output "$$@"$(ECHO_END)
-endif
 
 else
 $$(THEOS_OBJ_DIR)/$(1): $$(OBJ_FILES_TO_LINK)
