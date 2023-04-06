@@ -6,12 +6,12 @@ endif
 
 # Determine whether we are on a modern enough version of make for us to enable parallel building.
 # --output-sync was added in make 4.0; output is hard to read without it. Xcode includes make 3.81.
-ifeq ($(THEOS_USE_PARALLEL_BUILDING),)
+ifeq ($(THEOS_USE_PARALLEL_BUILDING),$(_THEOS_FALSE))
 _THEOS_IS_MAKE_GT_4_0 := $(call __vercmp,$(MAKE_VERSION),gt,4.0)
 ifeq ($(_THEOS_IS_MAKE_GT_4_0)$(THEOS_IGNORE_PARALLEL_BUILDING_NOTICE),)
 ifneq ($(shell $(or $(_THEOS_PLATFORM_GET_LOGICAL_CORES),:)),1)
 all::
-	@$(PRINT_FORMAT) "Build may be slow as Theos isn’t using all available CPU cores on this computer. Consider upgrading GNU Make: https://github.com/theos/theos/wiki/Parallel-Building"
+	@$(PRINT_FORMAT) "Build may be slow as Theos isn’t using all available CPU cores on this computer. Consider upgrading GNU Make: https://theos.dev/docs/parallel-building"
 endif
 endif
 THEOS_USE_PARALLEL_BUILDING := $(_THEOS_IS_MAKE_GT_4_0)
@@ -42,7 +42,9 @@ do:: all package install
 
 before-all::
 # If the sysroot is set but doesn’t exist, bail out.
-ifneq ($(SYSROOT),)
+ifeq ($(SYSROOT),)
+	$(ERROR_BEGIN) "A SYSROOT could not be found. For instructions on installing an SDK: https://theos.dev/docs/installation" $(ERROR_END)
+else
 ifneq ($(call __exists,$(SYSROOT)),$(_THEOS_TRUE))
 	$(ERROR_BEGIN) "Your current SYSROOT, “$(SYSROOT)”, appears to be missing." $(ERROR_END)
 endif
@@ -50,7 +52,7 @@ endif
 
 # If a vendored path is missing, bail out.
 ifneq ($(call __exists,$(THEOS_VENDOR_INCLUDE_PATH)/.git)$(call __exists,$(THEOS_VENDOR_LIBRARY_PATH)/.git),$(_THEOS_TRUE)$(_THEOS_TRUE))
-	$(ERROR_BEGIN) "The vendor/include and/or vendor/lib directories are missing. Please run \`$(THEOS)/bin/update-theos\`. More information: https://github.com/theos/theos/wiki/Installation." $(ERROR_END)
+	$(ERROR_BEGIN) "The vendor/include and/or vendor/lib directories are missing. Please run \`$(THEOS)/bin/update-theos\`. More information: https://theos.dev/install" $(ERROR_END)
 endif
 
 ifeq ($(call __exists,$(THEOS_LEGACY_PACKAGE_DIR)),$(_THEOS_TRUE))
@@ -171,19 +173,19 @@ update-theos::
 	$(ECHO_NOTHING)$(THEOS_BIN_PATH)/update-theos$(ECHO_END)
 
 troubleshoot::
-	@$(PRINT_FORMAT) "Be sure to check the troubleshooting page at https://github.com/theos/theos/wiki/Troubleshooting first."
-	@$(PRINT_FORMAT) "For support with build errors, ask on IRC: http://iphonedevwiki.net/index.php/IRC. If you think you've found a bug in Theos, check the issue tracker at https://github.com/theos/theos/issues."
+	@$(PRINT_FORMAT) "Be sure to check the troubleshooting page at https://theos.dev/docs/troubleshooting first."
+	@$(PRINT_FORMAT) "For support with build errors, ask on Discord: https://theos.dev/discord. If you think you've found a bug in Theos, check the issue tracker at: https://github.com/theos/theos/issues"
 	@echo
 
-ifeq ($(call __executable,ghost),$(_THEOS_TRUE))
-	@$(PRINT_FORMAT) "Creating a Ghostbin containing the output of \`make clean all messages=yes\`…"
-	+$(MAKE) -f $(_THEOS_PROJECT_MAKEFILE_NAME) --no-print-directory --no-keep-going clean all messages=yes COLOR=yes 2>&1 | ghost -x 2w - ansi
+ifeq ($(call __executable,gh),$(_THEOS_TRUE))
+	@$(PRINT_FORMAT) "Creating a Gist containing the output of \`make clean all messages=yes\`…"
+	+$(MAKE) -f $(_THEOS_PROJECT_MAKEFILE_NAME) --no-print-directory --no-keep-going clean all messages=yes COLOR=no THEOS_IS_TROUBLESHOOTING=1 2>&1 | tee /dev/tty | gh gist create - -d "Theos troubleshoot output"
 else
-	$(ERROR_BEGIN) "You don't have ghost installed. For more information, refer to https://github.com/theos/theos/wiki/Installation#prerequisites." $(ERROR_END)
+	$(ERROR_BEGIN) "You don't have the GitHub CLI installed. For more information, refer to: https://cli.github.com/" $(ERROR_END)
 endif
 
 $(eval $(call __mod,master/rules.mk))
 
-ifeq ($(_THEOS_TOP_INVOCATION_DONE),)
+ifeq ($(_THEOS_TOP_INVOCATION_DONE),$(_THEOS_FALSE))
 export _THEOS_TOP_INVOCATION_DONE = 1
 endif

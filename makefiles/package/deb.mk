@@ -6,11 +6,11 @@ _THEOS_PLATFORM_DPKG_DEB_COMPRESSION ?= $(or $(THEOS_PLATFORM_DEB_COMPRESSION_TY
 ifeq ($(_THEOS_FINAL_PACKAGE),$(_THEOS_TRUE))
 THEOS_PLATFORM_DEB_COMPRESSION_LEVEL ?= 9
 else
-THEOS_PLATFORM_DEB_COMPRESSION_LEVEL ?= 0
+THEOS_PLATFORM_DEB_COMPRESSION_LEVEL ?= 1
 endif
 
 _THEOS_DEB_PACKAGE_CONTROL_PATH := $(or $(wildcard $(THEOS_PROJECT_DIR)/control),$(wildcard $(THEOS_LAYOUT_DIR)/DEBIAN/control))
-_THEOS_DEB_CAN_PACKAGE := $(if $(_THEOS_DEB_PACKAGE_CONTROL_PATH),$(_THEOS_TRUE),$(_THEOS_FALSE))
+_THEOS_DEB_CAN_PACKAGE := $(call __exists,$(_THEOS_DEB_PACKAGE_CONTROL_PATH))
 _THEOS_PACKAGE_INC_VERSION_PREFIX := -
 _THEOS_PACKAGE_EXTRA_VERSION_PREFIX := +
 
@@ -21,12 +21,18 @@ internal-package-check::
 	$(ERROR_BEGIN)"$(MAKE) package requires $(_THEOS_PLATFORM_DPKG_DEB)."$(ERROR_END)
 endif
 
-ifeq ($(_THEOS_DEB_CAN_PACKAGE),$(_THEOS_TRUE)) # Control file found (or layout directory found.)
+ifeq ($(_THEOS_DEB_CAN_PACKAGE),$(_THEOS_TRUE)) # Control file found
 THEOS_PACKAGE_NAME := $(shell grep -i "^Package:" "$(_THEOS_DEB_PACKAGE_CONTROL_PATH)" | cut -d' ' -f2-)
 THEOS_PACKAGE_ARCH := $(shell grep -i "^Architecture:" "$(_THEOS_DEB_PACKAGE_CONTROL_PATH)" | cut -d' ' -f2-)
+
+ifeq ($(THEOS_PACKAGE_SCHEME)-$(THEOS_PACKAGE_ARCH),rootless-iphoneos-arm)
+	# Override architecture
+	THEOS_PACKAGE_ARCH := iphoneos-arm64
+endif
+
 THEOS_PACKAGE_BASE_VERSION := $(shell grep -i "^Version:" "$(_THEOS_DEB_PACKAGE_CONTROL_PATH)" | cut -d' ' -f2-)
 
-$(_THEOS_ESCAPED_STAGING_DIR)/DEBIAN:
+$(THEOS_STAGING_DIR)/DEBIAN:
 	$(ECHO_NOTHING)mkdir -p "$(THEOS_STAGING_DIR)/DEBIAN"$(ECHO_END)
 ifeq ($(_THEOS_HAS_STAGING_LAYOUT),1) # If we have a layout directory, copy layout/DEBIAN to the staging directory.
 	$(ECHO_NOTHING)[ -d "$(THEOS_LAYOUT_DIR)/DEBIAN" ] && rsync -a "$(THEOS_LAYOUT_DIR)/DEBIAN/" "$(THEOS_STAGING_DIR)/DEBIAN" $(_THEOS_RSYNC_EXCLUDE_COMMANDLINE) || true$(ECHO_END)
@@ -46,16 +52,24 @@ endif
 
 _THEOS_DEB_LIBSWIFT_DEPENDS := $(_THEOS_DEB_LIBSWIFT_PACKAGE) (>= $(_THEOS_DEB_LIBSWIFT_PACKAGE_VERSION))
 
-$(_THEOS_ESCAPED_STAGING_DIR)/DEBIAN/control: $(_THEOS_ESCAPED_STAGING_DIR)/DEBIAN
-	$(ECHO_NOTHING)sed -e 's/\$${LIBSWIFT}/$(_THEOS_DEB_LIBSWIFT_DEPENDS)/g; s/\$${LIBSWIFT_VERSION}/$(_THEOS_DEB_LIBSWIFT_PACKAGE_VERSION)/g; /^[Vv]ersion:/d; /^$$/d; $$a\' "$(_THEOS_DEB_PACKAGE_CONTROL_PATH)" > "$@"$(ECHO_END)
+$(THEOS_STAGING_DIR)/DEBIAN/control: $(THEOS_STAGING_DIR)/DEBIAN
+	$(ECHO_NOTHING)sed -e 's/\$${LIBSWIFT}/$(_THEOS_DEB_LIBSWIFT_DEPENDS)/g; s/\$${LIBSWIFT_VERSION}/$(_THEOS_DEB_LIBSWIFT_PACKAGE_VERSION)/g; /^[Vv]ersion:/d; /^[Aa]rchitecture:/d; /^$$/d; $$a\' "$(_THEOS_DEB_PACKAGE_CONTROL_PATH)" > "$@"$(ECHO_END)
+	$(ECHO_NOTHING)echo "Architecture: $(THEOS_PACKAGE_ARCH)" >> "$@"$(ECHO_END)
 	$(ECHO_NOTHING)echo "Version: $(_THEOS_INTERNAL_PACKAGE_VERSION)" >> "$@"$(ECHO_END)
 	$(ECHO_NOTHING)echo "Installed-Size: $(shell du $(_THEOS_PLATFORM_DU_EXCLUDE) DEBIAN -ks "$(THEOS_STAGING_DIR)" | cut -f 1)" >> "$@"$(ECHO_END)
 
-before-package:: $(_THEOS_ESCAPED_STAGING_DIR)/DEBIAN/control
+before-package:: $(THEOS_STAGING_DIR)/DEBIAN/control
 
 _THEOS_DEB_PACKAGE_FILENAME = $(THEOS_PACKAGE_DIR)/$(THEOS_PACKAGE_NAME)_$(_THEOS_INTERNAL_PACKAGE_VERSION)_$(THEOS_PACKAGE_ARCH).deb
 
 internal-package::
+ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
+	$(ECHO_NOTHING)mkdir -p "$(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)"$(ECHO_END)
+	$(ECHO_NOTHING)rsync -a "$(THEOS_STAGING_DIR)/" "$(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)" --exclude "DEBIAN" --exclude "$(THEOS_PACKAGE_INSTALL_PREFIX)" $(_THEOS_RSYNC_EXCLUDE_COMMANDLINE) $(ECHO_END)
+# Delete everything except DEBIAN/ and /var
+	$(ECHO_NOTHING)find "$(THEOS_STAGING_DIR)" -mindepth 1 -maxdepth 1 ! -name DEBIAN ! -name "var" -exec rm -rf {} \;$(ECHO_END)
+	$(ECHO_NOTHING)rmdir "$(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)/var" >/dev/null || true$(ECHO_END)
+endif
 	$(ECHO_NOTHING)COPYFILE_DISABLE=1 $(FAKEROOT) -r $(_THEOS_PLATFORM_DPKG_DEB) -Z$(_THEOS_PLATFORM_DPKG_DEB_COMPRESSION) -z$(THEOS_PLATFORM_DEB_COMPRESSION_LEVEL) -b "$(THEOS_STAGING_DIR)" "$(_THEOS_DEB_PACKAGE_FILENAME)"$(ECHO_END)
 
 # This variable is used in package.mk
@@ -63,7 +77,7 @@ after-package:: __THEOS_LAST_PACKAGE_FILENAME = $(_THEOS_DEB_PACKAGE_FILENAME)
 
 else # _THEOS_DEB_CAN_PACKAGE == 0
 internal-package::
-	$(ERROR_BEGIN)"$(MAKE) package requires you to have a layout/ directory in the project root, containing the basic package structure, or a control file in the project root describing the package."$(ERROR_END)
+	$(ERROR_BEGIN)"$(MAKE) package requires you to have a control file either in the layout/DEBIAN/ directory or in the project root. The control is used to determine info about the package (e.g., name, arch, and version)."$(ERROR_END)
 
 endif # _THEOS_DEB_CAN_PACKAGE
 endif # _THEOS_PACKAGE_FORMAT_LOADED

@@ -1,8 +1,8 @@
-ifeq ($(_THEOS_RULES_LOADED),)
+ifeq ($(_THEOS_RULES_LOADED),$(_THEOS_FALSE))
 include $(THEOS_MAKE_PATH)/rules.mk
 endif
 
-.PHONY: internal-xcodeproj-all_ internal-xcodeproj-stage_ internal-xcodeproj-compile
+.PHONY: internal-xcodeproj-all_ internal-xcodeproj-stage_ internal-xcodeproj-compile internal-xcodeproj-clean
 
 ifeq ($(call __theos_bool,$(THEOS_USE_PARALLEL_BUILDING)),$(_THEOS_TRUE))
 # Don't synchronize xcodeproj output, because doing so results in Make buffering
@@ -14,10 +14,17 @@ endif
 
 ifeq ($(_THEOS_MAKE_PARALLEL_BUILDING), no)
 internal-xcodeproj-all_:: internal-xcodeproj-compile
+internal-clean:: internal-xcodeproj-clean
 else
 internal-xcodeproj-all_::
 	$(ECHO_MAKE)$(MAKE) -f $(_THEOS_PROJECT_MAKEFILE_NAME) $(_THEOS_MAKEFLAGS) \
 		internal-xcodeproj-compile \
+		_THEOS_CURRENT_TYPE=$(_THEOS_CURRENT_TYPE) THEOS_CURRENT_INSTANCE=$(THEOS_CURRENT_INSTANCE) _THEOS_CURRENT_OPERATION=compile \
+		THEOS_BUILD_DIR="$(THEOS_BUILD_DIR)" _THEOS_MAKE_PARALLEL=yes
+
+internal-clean::
+	$(ECHO_MAKE)$(MAKE) -f $(_THEOS_PROJECT_MAKEFILE_NAME) $(_THEOS_MAKEFLAGS) \
+		internal-xcodeproj-clean \
 		_THEOS_CURRENT_TYPE=$(_THEOS_CURRENT_TYPE) THEOS_CURRENT_INSTANCE=$(THEOS_CURRENT_INSTANCE) _THEOS_CURRENT_OPERATION=compile \
 		THEOS_BUILD_DIR="$(THEOS_BUILD_DIR)" _THEOS_MAKE_PARALLEL=yes
 endif
@@ -27,9 +34,9 @@ ALL_XCODEOPTS = $(_THEOS_INTERNAL_XCODEOPTS) $(ADDITIONAL_XCODEOPTS) $(call __sc
 
 _THEOS_INTERNAL_XCODEOPTS = -sdk $(_THEOS_TARGET_PLATFORM_NAME)
 
-# Xcode strips even debug builds, which is an issue when using lldb because it's unable to 
-# locate the local unstripped copy since it isn't aware of our custom derivedDataPath. While 
-# that underlying issue still needs to be resolved to allow debugging release builds, the 
+# Xcode strips even debug builds, which is an issue when using lldb because it's unable to
+# locate the local unstripped copy since it isn't aware of our custom derivedDataPath. While
+# that underlying issue still needs to be resolved to allow debugging release builds, the
 # following is a more immediate solution until we get around to solving that – which we could
 # do by, for example, writing a DBGShellCommands script or using DBGFileMappedPaths.
 _THEOS_INTERNAL_XCODEFLAGS += STRIP_INSTALLED_PRODUCT=$(if $(SHOULD_STRIP),YES,NO)
@@ -58,10 +65,10 @@ endif
 _THEOS_XCODEBUILD_BEGIN = $(ECHO_NOTHING)set -eo pipefail; $(TARGET_XCODEBUILD) \
 	$(_THEOS_XCODEBUILD_PROJECT_FLAG) \
 	-scheme '$(or $($(THEOS_CURRENT_INSTANCE)_XCODE_SCHEME),$(THEOS_CURRENT_INSTANCE))' \
-	-configuration $(_THEOS_XCODE_BUILD_CONFIG) \
-	-derivedDataPath $(THEOS_OBJ_DIR)
+	-configuration $(_THEOS_XCODE_BUILD_CONFIG)
 _THEOS_XCODEBUILD_END = CODE_SIGNING_ALLOWED=NO \
 	ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO \
+	ENABLE_BITCODE=$(or $($(THEOS_CURRENT_INSTANCE)_ENABLE_BITCODE),NO) \
 	DSTROOT=$(THEOS_OBJ_DIR)/install \
 	$(_THEOS_XCODE_XCPRETTY)$(ECHO_END)
 export EXPANDED_CODE_SIGN_IDENTITY =
@@ -78,10 +85,10 @@ ifneq ($(_THEOS_PLATFORM_HAS_XCODE),$(_THEOS_TRUE))
 		exit 1
 endif
 	$(_THEOS_XCODEBUILD_BEGIN) \
-	$(ALL_XCODEOPTS) \
-	$(_THEOS_XCODE_BUILD_COMMAND) \
-	$(ALL_XCODEFLAGS) \
-	$(_THEOS_XCODEBUILD_END)
+		$(ALL_XCODEOPTS) \
+		$(_THEOS_XCODE_BUILD_COMMAND) \
+		$(ALL_XCODEFLAGS) \
+		$(_THEOS_XCODEBUILD_END)
 ifeq ($(_THEOS_PACKAGE_FORMAT),deb)
 	$(ECHO_NOTHING)find $(THEOS_OBJ_DIR)/install -name 'libswift*.dylib' -delete$(ECHO_END)
 endif
@@ -106,6 +113,13 @@ ifneq ($(_THEOS_CODESIGN_COMMANDLINE),)
 	process_dir $(THEOS_OBJ_DIR)/install; \
 	$(ECHO_END)
 endif
+
+internal-xcodeproj-clean::
+	$(_THEOS_XCODEBUILD_BEGIN) \
+		$(ALL_XCODEOPTS) \
+		clean \
+		$(ALL_XCODEFLAGS) \
+		$(_THEOS_XCODEBUILD_END)
 
 ifneq ($($(THEOS_CURRENT_INSTANCE)_INSTALL),0)
 internal-xcodeproj-stage_::

@@ -19,7 +19,7 @@ ifeq ($(THEOS_PROJECT_DIR),)
 THEOS_PROJECT_DIR := $(shell pwd)
 endif
 _THEOS_RELATIVE_DATA_DIR ?= .theos
-_THEOS_LOCAL_DATA_DIR := $(THEOS_PROJECT_DIR)/$(_THEOS_RELATIVE_DATA_DIR)
+_THEOS_LOCAL_DATA_DIR ?= $(THEOS_PROJECT_DIR)/$(_THEOS_RELATIVE_DATA_DIR)
 _THEOS_BUILD_SESSION_FILE = $(_THEOS_LOCAL_DATA_DIR)/build_session
 
 ### Functions
@@ -109,6 +109,7 @@ __schema_var_name_last = $(strip $(lastword $(call __schema_defined_var_names,$(
 __schema_var_last = $(strip $($(lastword $(call __schema_defined_var_names,$(1),$(2)))))
 
 include $(THEOS_MAKE_PATH)/vercmp.mk
+include $(THEOS_MAKE_PATH)/target.mk
 
 THEOS_LAYOUT_DIR_NAME ?= layout
 THEOS_LAYOUT_DIR ?= $(THEOS_PROJECT_DIR)/$(THEOS_LAYOUT_DIR_NAME)
@@ -121,7 +122,7 @@ __mod = -include $$(foreach mod,$$(_THEOS_LOAD_MODULES),$$(THEOS_MODULE_PATH)/$$
 
 include $(THEOS_MAKE_PATH)/legacy.mk
 
-ifneq ($(_THEOS_PLATFORM_CALCULATED),1)
+ifneq ($(_THEOS_PLATFORM_CALCULATED),$(_THEOS_TRUE))
 uname_s := $(shell uname -s)
 uname_o := $(shell uname -o 2>/dev/null)
 
@@ -135,10 +136,8 @@ endif
 $(eval $(call __mod,platform/$(_THEOS_PLATFORM).mk))
 $(eval $(call __mod,platform/$(_THEOS_OS).mk))
 
-ifneq ($(_THEOS_TARGET_CALCULATED),1)
-__TARGET_MAKEFILE := $(shell $(THEOS_BIN_PATH)/target.pl "$(target)" "$(call __schema_var_last,,TARGET)" "$(_THEOS_PLATFORM_DEFAULT_TARGET)")
--include $(__TARGET_MAKEFILE)
-$(shell rm -f $(__TARGET_MAKEFILE) > /dev/null 2>&1)
+ifneq ($(_THEOS_TARGET_CALCULATED),$(_THEOS_TRUE))
+$(call __eval_target,$(target),$(call __schema_var_last,,TARGET),$(_THEOS_PLATFORM_DEFAULT_TARGET))
 export _THEOS_TARGET := $(__THEOS_TARGET_ARG_0)
 ifeq ($(_THEOS_TARGET),)
 $(error You did not specify a target, and the "$(THEOS_PLATFORM_NAME)" platform does not define a default target)
@@ -153,7 +152,7 @@ $(eval $(call __mod,targets/$(_THEOS_PLATFORM)/$(_THEOS_TARGET).mk))
 $(eval $(call __mod,targets/$(_THEOS_OS)/$(_THEOS_TARGET).mk))
 $(eval $(call __mod,targets/$(_THEOS_TARGET).mk))
 
-ifneq ($(_THEOS_TARGET_LOADED),1)
+ifneq ($(_THEOS_TARGET_LOADED),$(_THEOS_TRUE))
 $(error The "$(_THEOS_TARGET)" target is not supported on the "$(THEOS_PLATFORM_NAME)" platform)
 endif
 
@@ -205,7 +204,7 @@ _THEOS_INTERNAL_IFLAGS_BASE = $(if $(_THEOS_TARGET_HAS_INCLUDE_PATH),-I$(THEOS_T
 _THEOS_INTERNAL_IFLAGS_C = $(_THEOS_INTERNAL_IFLAGS_BASE) -include $(THEOS)/Prefix.pch
 _THEOS_INTERNAL_IFLAGS_SWIFT = $(_THEOS_INTERNAL_IFLAGS_BASE)
 
-ifneq ($(GO_EASY_ON_ME),1)
+ifneq ($(GO_EASY_ON_ME),$(_THEOS_TRUE))
 	_THEOS_INTERNAL_LOGOSFLAGS += -c warnings=error
 	_THEOS_INTERNAL_CFLAGS += -Werror
 endif
@@ -239,8 +238,7 @@ endif
 
 THEOS_STAGING_DIR_NAME ?= _
 THEOS_STAGING_DIR ?= $(_THEOS_LOCAL_DATA_DIR)/$(THEOS_STAGING_DIR_NAME)
-_SPACE := $(subst x,,x x)
-_THEOS_ESCAPED_STAGING_DIR = $(subst $(_SPACE),\ ,$(THEOS_STAGING_DIR))
+
 _THEOS_BACKSLASHED_STAGING_DIR = $(subst /,\/,$(THEOS_STAGING_DIR))
 
 SIMJECT_ROOT ?= /opt/simject
