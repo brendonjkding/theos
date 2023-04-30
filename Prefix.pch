@@ -40,5 +40,11 @@
 				#pragma message ( "About to release arm64e slice made by Xcode 12+" )
 			#endif
 		#endif
+	#else // Xcode 11-
+		#ifdef THEOS_PACKAGE_INSTALL_PREFIX //rootless
+			#if !DEBUG
+				#pragma message ( "About to release arm64e slice made by Xcode 11- for rootless")
+			#endif
+		#endif
 	#endif
 #endif
