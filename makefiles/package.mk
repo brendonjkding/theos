@@ -116,7 +116,7 @@ before-install::
 ifeq ($(PREINSTALL_TARGET_PROCESSES),)
 	@:
 else
-	$(ECHO_PRE_UNLOADING)install.exec "killall $(PREINSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
+	$(ECHO_PRE_UNLOADING)install.exec "killall -9 $(PREINSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
 endif
 
 internal-install::
@@ -126,7 +126,7 @@ internal-after-install::
 ifeq ($(INSTALL_TARGET_PROCESSES),)
 	@:
 else
-	$(ECHO_UNLOADING)install.exec "killall $(INSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
+	$(ECHO_UNLOADING)install.exec "killall -9 $(INSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
 endif
 
 ## Uninstallation Core Rules
@@ -142,7 +142,7 @@ internal-after-uninstall::
 ifeq ($(INSTALL_TARGET_PROCESSES),)
 	@:
 else
-	$(ECHO_UNLOADING)install.exec "killall $(INSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
+	$(ECHO_UNLOADING)install.exec "killall -9 $(INSTALL_TARGET_PROCESSES) 2>/dev/null || true"$(ECHO_END)
 endif
 
 ifndef SIMULATOR
