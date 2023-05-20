@@ -18,6 +18,13 @@ endif
 ifeq ($(THEOS_PROJECT_DIR),)
 THEOS_PROJECT_DIR := $(shell pwd)
 endif
+ifeq ($(THEOS_USE_SEPARATE_LOCAL_DATA_DIR), 1)
+	_THEOS_REAL_PROJECT_DIR = $(shell readlink $(THEOS_PROJECT_DIR))
+	ifeq ($(_THEOS_REAL_PROJECT_DIR),)
+		_THEOS_REAL_PROJECT_DIR = $(THEOS_PROJECT_DIR)
+	endif
+	_THEOS_LOCAL_DATA_DIR := $(HOME)/.theos/$(shell basename "$(_THEOS_REAL_PROJECT_DIR)").$(shell echo $(_THEOS_REAL_PROJECT_DIR)|md5sum|awk '{print $$1}')
+endif
 ifneq ($(words $(THEOS_PROJECT_DIR)),1)
 $(shell rm -f /tmp/theos)
 $(shell ln -s "$(THEOS_PROJECT_DIR)" /tmp/theos)
