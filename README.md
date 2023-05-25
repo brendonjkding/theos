@@ -17,6 +17,8 @@ macOS, Linux, and Windows programs.
 </p>
 
 ## This Fork
+* Add support for projects with spaces in path
+* Add option to store local data (.theos) in ~/.theos instead
 * Add ability to directly install Tweak to Simulator
 * Add x86_64 to tbds so we can link Simulator Tweaks to applist, cephei, etc
 * Automatically add arm64 arch when targeting Simulator with sdk >= 14.0
