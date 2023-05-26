@@ -24,6 +24,7 @@ macOS, Linux, and Windows programs.
 * Automatically add arm64 arch when targeting Simulator with sdk >= 14.0
 * Automatically add `arch -x86_64` before `xcrun` if `xcode-select` to x64-only toolchain on Apple silicon
 * Add ability to throw a warning if building arm64e with Xcode 12
+* Add ability to throw a warning if building rootless with Xcode 11-
 * Correctly select latest sdk when we need to link private frameworks
 * Fix logos double ",..." issue
 * Fix .xmi not treated as objc++ issue
