@@ -37,13 +37,13 @@
 	#if __clang_major__ >=12 //Xcode 12
 		#ifndef NO_XCODE_12_WARNING
 			#if !DEBUG
-				#ifndef THEOS_PACKAGE_INSTALL_PREFIX//rootrw
+				#ifndef THEOS_PACKAGE_SCHEME_IS_ROOTLESS//rootrw
 					#pragma message ( "About to release arm64e slice made by Xcode 12+" )
 				#endif
 			#endif
 		#endif
 	#else // Xcode 11-
-		#ifdef THEOS_PACKAGE_INSTALL_PREFIX //rootless
+		#ifdef THEOS_PACKAGE_SCHEME_IS_ROOTLESS //rootless
 			#if !DEBUG
 				#pragma message ( "About to release arm64e slice made by Xcode 11- for rootless")
 			#endif
