@@ -50,4 +50,5 @@ _TARGET_OBJC_ABI_LDFLAGS := $(if $(_TARGET_VERSION_GE_3_2),-Xlinker -objc_abi_ve
 
 _THEOS_TARGET_CFLAGS += $(_TARGET_OBJC_ABI_CFLAGS)
 _THEOS_TARGET_LDFLAGS += $(_TARGET_OBJC_ABI_LDFLAGS) -Xlinker -allow_simulator_linking_to_macosx_dylibs
+THEOS_VENDOR_LIBRARY_PATH = $(THEOS)/vendor/lib/simulators
 endif
