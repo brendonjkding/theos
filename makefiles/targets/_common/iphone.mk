@@ -87,12 +87,14 @@ endif
 
 # Warn about using clang >=12.0.0 when deploying for arm64e before iOS 14.0, which uses an old ABI
 # not supported by newer clang releases.
+ifeq ($(FINALPACKAGE),1)
 ifneq ($(_DEPLOY_VERSION_GE_14_0),1)
 ifneq ($(filter arm64e,$(ARCHS)),)
 _TARGET_CC_VERSION_GE_1200 := $(call __vercmp,$(_THEOS_TARGET_CC_VERSION),ge,12.0.0)
 ifeq ($(_TARGET_CC_VERSION_GE_1200),1)
 before-all::
 	@$(PRINT_FORMAT_WARNING) "Building for iOS $(_THEOS_TARGET_OS_DEPLOYMENT_VERSION), but the current toolchain can’t produce arm64e binaries for iOS earlier than 14.0. More information: https://theos.dev/docs/arm64e-deployment" >&2
+endif
 endif
 endif
 endif
