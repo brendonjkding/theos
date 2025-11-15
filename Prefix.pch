@@ -33,20 +33,14 @@
 	#endif
 #endif
 
-#if __has_feature(ptrauth_calls) // arm64e
+#if /*arm64e*/__has_feature(ptrauth_calls) && !DEBUG && !defined(NO_XCODE_12_WARNING)
 	#if __clang_major__ >=12 //Xcode 12
-		#ifndef NO_XCODE_12_WARNING
-			#if !DEBUG
-				#ifndef THEOS_PACKAGE_SCHEME_IS_ROOTLESS//rootrw
-					#pragma message ( "About to release arm64e slice made by Xcode 12+" )
-				#endif
-			#endif
+		#if defined(THEOS_PACKAGE_SCHEME_ROOTFUL)//rootful
+			#pragma message ("About to release arm64e slice made by Xcode 12+ for rootful")
 		#endif
 	#else // Xcode 11-
-		#ifdef THEOS_PACKAGE_SCHEME_IS_ROOTLESS //rootless
-			#if !DEBUG
-				#pragma message ( "About to release arm64e slice made by Xcode 11- for rootless")
-			#endif
+		#if defined(THEOS_PACKAGE_SCHEME_ROOTLESS) || defined(THEOS_PACKAGE_SCHEME_ROOTHIDE)//rootless or roothide
+			#pragma message ("About to release arm64e slice made by Xcode 11- for rootless/roothide")
 		#endif
 	#endif
 #endif
