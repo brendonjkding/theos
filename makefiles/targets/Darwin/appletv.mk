@@ -14,4 +14,6 @@ _THEOS_TARGET_DEFAULT_OS_DEPLOYMENT_VERSION := 9.0
 
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_head.mk
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
+
+THEOS_VENDOR_LIBRARY_PATH = $(THEOS)/vendor/lib/appletv
 endif
