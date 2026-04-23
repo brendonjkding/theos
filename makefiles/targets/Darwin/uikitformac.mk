@@ -25,7 +25,7 @@ include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
 
 _THEOS_UIKITFORMAC_INCLUDEFLAGS := -isystem $(SYSROOT)/System/iOSSupport/usr/include -iframework $(SYSROOT)/System/iOSSupport/System/Library/Frameworks
 _THEOS_UIKITFORMAC_SWIFTINCLUDEFLAGS := -Xcc -isystem -Xcc $(SYSROOT)/System/iOSSupport/usr/include -Fsystem $(SYSROOT)/System/iOSSupport/System/Library/Frameworks
-_THEOS_UIKITFORMAC_LDFLAGS := -L$(SYSROOT)/System/iOSSupport/usr/lib -L$(dir $(shell type -p $(TARGET_SWIFT)))../lib/swift/uikitformac
+_THEOS_UIKITFORMAC_LDFLAGS := -L$(SYSROOT)/System/iOSSupport/usr/lib
 
 _THEOS_TARGET_CFLAGS += $(_THEOS_UIKITFORMAC_INCLUDEFLAGS)
 _THEOS_TARGET_SWIFTFLAGS += $(_THEOS_UIKITFORMAC_SWIFTINCLUDEFLAGS)
