@@ -52,4 +52,6 @@ ifeq ($(_TARGET_VERSION_GE_10_15),1)
 endif
 
 include $(THEOS_MAKE_PATH)/targets/_common/darwin_tail.mk
+
+THEOS_VENDOR_LIBRARY_PATH = $(THEOS)/vendor/lib/macosx
 endif
