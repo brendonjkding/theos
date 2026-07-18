@@ -29,6 +29,11 @@
 			#import <UIKit/UIKit.h>
 			#import <theos/IOSMacros.h>
 			#import <HBLog.h>
+			#import <objc/runtime.h>
+			#import <substrate.h>
+			#import <dlfcn.h>
+		#elif TARGET_OS_OSX
+			#import <Cocoa/Cocoa.h>
 		#endif
 	#endif
 #endif
