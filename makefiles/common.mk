@@ -224,7 +224,7 @@ _THEOS_INTERNAL_IFLAGS_SWIFT = $(_THEOS_INTERNAL_IFLAGS_BASE)
 
 ifneq ($(GO_EASY_ON_ME),$(_THEOS_TRUE))
 	_THEOS_INTERNAL_LOGOSFLAGS += -c warnings=error
-	_THEOS_INTERNAL_CFLAGS += -Werror
+	_THEOS_INTERNAL_CFLAGS += -Werror -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-value
 endif
 
 # If COLOR hasn’t already been set, set it to enabled. We need to do this because output is buffered
